@@ -45,7 +45,7 @@ func resourceGithubActionsSecret() *schema.Resource {
 }
 
 func resourceGithubActionsSecretCreateOrUpdate(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
