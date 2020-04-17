@@ -29,7 +29,7 @@ func dataSourceGithubActionsPublicKey() *schema.Resource {
 }
 
 func dataSourceGithubActionsPublicKeyRead(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
