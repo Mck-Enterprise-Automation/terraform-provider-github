@@ -80,12 +80,12 @@ func resourceGithubOrganizationWebhookCreate(d *schema.ResourceData, meta interf
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	webhookObj := resourceGithubOrganizationWebhookObject(d)
 	ctx := context.Background()
 
-	log.Printf("[DEBUG] Creating organization webhook: %d (%s)", webhookObj.GetID(), ownerName)
-	hook, _, err := client.Organizations.CreateHook(ctx, ownerName, webhookObj)
+	log.Printf("[DEBUG] Creating organization webhook: %d (%s)", webhookObj.GetID(), org)
+	hook, _, err := client.Organizations.CreateHook(ctx, org, webhookObj)
 
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func resourceGithubOrganizationWebhookRead(d *schema.ResourceData, meta interfac
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	hookID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return unconvertibleIdErr(d.Id(), err)
@@ -121,8 +121,8 @@ func resourceGithubOrganizationWebhookRead(d *schema.ResourceData, meta interfac
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	log.Printf("[DEBUG] Reading organization webhook: %s (%s)", d.Id(), ownerName)
-	hook, resp, err := client.Organizations.GetHook(ctx, ownerName, hookID)
+	log.Printf("[DEBUG] Reading organization webhook: %s (%s)", d.Id(), org)
+	hook, resp, err := client.Organizations.GetHook(ctx, org, hookID)
 	if err != nil {
 		if ghErr, ok := err.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
@@ -130,7 +130,7 @@ func resourceGithubOrganizationWebhookRead(d *schema.ResourceData, meta interfac
 			}
 			if ghErr.Response.StatusCode == http.StatusNotFound {
 				log.Printf("[WARN] Removing organization webhook %s/%s from state because it no longer exists in GitHub",
-					ownerName, d.Id())
+					org, d.Id())
 				d.SetId("")
 				return nil
 			}
@@ -168,7 +168,7 @@ func resourceGithubOrganizationWebhookUpdate(d *schema.ResourceData, meta interf
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	webhookObj := resourceGithubOrganizationWebhookObject(d)
 	hookID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -176,10 +176,10 @@ func resourceGithubOrganizationWebhookUpdate(d *schema.ResourceData, meta interf
 	}
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
-	log.Printf("[DEBUG] Updating organization webhook: %s (%s)", d.Id(), ownerName)
+	log.Printf("[DEBUG] Updating organization webhook: %s (%s)", d.Id(), org)
 
 	_, _, err = client.Organizations.EditHook(ctx,
-		ownerName, hookID, webhookObj)
+		org, hookID, webhookObj)
 	if err != nil {
 		return err
 	}
@@ -195,14 +195,14 @@ func resourceGithubOrganizationWebhookDelete(d *schema.ResourceData, meta interf
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	hookID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return unconvertibleIdErr(d.Id(), err)
 	}
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
-	log.Printf("[DEBUG] Deleting organization webhook: %s (%s)", d.Id(), ownerName)
-	_, err = client.Organizations.DeleteHook(ctx, ownerName, hookID)
+	log.Printf("[DEBUG] Deleting organization webhook: %s (%s)", d.Id(), org)
+	_, err = client.Organizations.DeleteHook(ctx, org, hookID)
 	return err
 }

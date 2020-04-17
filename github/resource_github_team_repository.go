@@ -60,17 +60,17 @@ func resourceGithubTeamRepositoryCreate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return unconvertibleIdErr(teamIdString, err)
 	}
-	ownerName := meta.(*Owner).name
+	owner := meta.(*Owner).name
 	repoName := d.Get("repository").(string)
 	permission := d.Get("permission").(string)
 	ctx := context.Background()
 
 	log.Printf("[DEBUG] Creating team repository association: %s:%s (%s/%s)",
-		teamIdString, permission, ownerName, repoName)
+		teamIdString, permission, owner, repoName)
 	_, err = client.Teams.AddTeamRepoByID(ctx,
 		orgId,
 		teamId,
-		ownerName,
+		owner,
 		repoName,
 		&github.TeamAddTeamRepoOptions{
 			Permission: permission,
@@ -104,14 +104,14 @@ func resourceGithubTeamRepositoryRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return unconvertibleIdErr(teamIdString, err)
 	}
-	ownerName := meta.(*Owner).name
+	owner := meta.(*Owner).name
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 	if !d.IsNewResource() {
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	log.Printf("[DEBUG] Reading team repository association: %s (%s/%s)", teamIdString, ownerName, repoName)
-	repo, resp, repoErr := client.Teams.IsTeamRepoByID(ctx, orgId, teamId, ownerName, repoName)
+	log.Printf("[DEBUG] Reading team repository association: %s (%s/%s)", teamIdString, owner, repoName)
+	repo, resp, repoErr := client.Teams.IsTeamRepoByID(ctx, orgId, teamId, owner, repoName)
 	if repoErr != nil {
 		if ghErr, ok := repoErr.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
@@ -155,18 +155,18 @@ func resourceGithubTeamRepositoryUpdate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return unconvertibleIdErr(teamIdString, err)
 	}
-	ownerName := meta.(*Owner).name
+	owner := meta.(*Owner).name
 	repoName := d.Get("repository").(string)
 	permission := d.Get("permission").(string)
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
 	log.Printf("[DEBUG] Updating team repository association: %s:%s (%s/%s)",
-		teamIdString, permission, ownerName, repoName)
+		teamIdString, permission, owner, repoName)
 	// the go-github library's AddTeamRepo method uses the add/update endpoint from Github API
 	_, err = client.Teams.AddTeamRepoByID(ctx,
 		orgId,
 		teamId,
-		ownerName,
+		owner,
 		repoName,
 		&github.TeamAddTeamRepoOptions{
 			Permission: permission,
@@ -196,12 +196,12 @@ func resourceGithubTeamRepositoryDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return unconvertibleIdErr(teamIdString, err)
 	}
-	ownerName := meta.(*Owner).name
+	owner := meta.(*Owner).name
 	repoName := d.Get("repository").(string)
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
 	log.Printf("[DEBUG] Deleting team repository association: %s (%s/%s)",
-		teamIdString, ownerName, repoName)
-	_, err = client.Teams.RemoveTeamRepoByID(ctx, orgId, teamId, ownerName, repoName)
+		teamIdString, owner, repoName)
+	_, err = client.Teams.RemoveTeamRepoByID(ctx, orgId, teamId, owner, repoName)
 	return err
 }

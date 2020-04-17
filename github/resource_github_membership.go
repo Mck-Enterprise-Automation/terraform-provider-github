@@ -48,7 +48,7 @@ func resourceGithubMembershipCreateOrUpdate(d *schema.ResourceData, meta interfa
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	username := d.Get("username").(string)
 	roleName := d.Get("role").(string)
 	ctx := context.Background()
@@ -56,10 +56,10 @@ func resourceGithubMembershipCreateOrUpdate(d *schema.ResourceData, meta interfa
 		ctx = context.WithValue(ctx, ctxId, d.Id())
 	}
 
-	log.Printf("[DEBUG] Creating membership: %s/%s", ownerName, username)
+	log.Printf("[DEBUG] Creating membership: %s/%s", org, username)
 	membership, _, err := client.Organizations.EditOrgMembership(ctx,
 		username,
-		ownerName,
+		org,
 		&github.Membership{
 			Role: github.String(roleName),
 		},
@@ -81,7 +81,7 @@ func resourceGithubMembershipRead(d *schema.ResourceData, meta interface{}) erro
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	_, username, err := parseTwoPartID(d.Id(), "organization", "username")
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func resourceGithubMembershipRead(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[DEBUG] Reading membership: %s", d.Id())
 	membership, resp, err := client.Organizations.GetOrgMembership(ctx,
-		username, ownerName)
+		username, org)
 	if err != nil {
 		if ghErr, ok := err.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
@@ -123,12 +123,12 @@ func resourceGithubMembershipDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
 	log.Printf("[DEBUG] Deleting membership: %s", d.Id())
 	_, err = client.Organizations.RemoveOrgMembership(ctx,
-		d.Get("username").(string), ownerName)
+		d.Get("username").(string), org)
 
 	return err
 }

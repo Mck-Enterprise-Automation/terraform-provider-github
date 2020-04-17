@@ -197,7 +197,7 @@ func resourceGithubRepositoryObject(d *schema.ResourceData) *github.Repository {
 }
 
 func resourceGithubRepositoryCreate(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
@@ -247,7 +247,12 @@ func resourceGithubRepositoryCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	} else {
 		// Create without a repository template
-		repo, _, err := client.Repositories.Create(ctx, ownerName, repoReq)
+		// To create for a user account, the Github API expects an empty org param
+		org := ""
+		if meta.(*Owner).IsOrganization {
+			org = ownerName
+		}
+		repo, _, err := client.Repositories.Create(ctx, org, repoReq)
 		if err != nil {
 			return err
 		}
@@ -338,7 +343,7 @@ func resourceGithubRepositoryRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceGithubRepositoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
@@ -378,7 +383,7 @@ func resourceGithubRepositoryUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceGithubRepositoryDelete(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}

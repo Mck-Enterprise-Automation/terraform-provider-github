@@ -57,7 +57,7 @@ func resourceGithubRepositoryProject() *schema.Resource {
 }
 
 func resourceGithubRepositoryProjectCreate(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func resourceGithubRepositoryProjectCreate(d *schema.ResourceData, meta interfac
 }
 
 func resourceGithubRepositoryProjectRead(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}

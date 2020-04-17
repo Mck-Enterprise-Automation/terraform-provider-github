@@ -67,7 +67,7 @@ func resourceGithubTeamCreate(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	name := d.Get("name").(string)
 	newTeam := github.NewTeam{
 		Name:        name,
@@ -80,9 +80,9 @@ func resourceGithubTeamCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	ctx := context.Background()
 
-	log.Printf("[DEBUG] Creating team: %s (%s)", name, ownerName)
+	log.Printf("[DEBUG] Creating team: %s (%s)", name, org)
 	githubTeam, _, err := client.Teams.CreateTeam(ctx,
-		ownerName, newTeam)
+		org, newTeam)
 	if err != nil {
 		return err
 	}

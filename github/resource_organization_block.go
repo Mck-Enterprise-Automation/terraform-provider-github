@@ -40,12 +40,12 @@ func resourceOrganizationBlockCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	ctx := context.Background()
 	username := d.Get("username").(string)
 
-	log.Printf("[DEBUG] Creating organization block: %s (%s)", username, ownerName)
-	_, err = client.Organizations.BlockUser(ctx, ownerName, username)
+	log.Printf("[DEBUG] Creating organization block: %s (%s)", username, org)
+	_, err = client.Organizations.BlockUser(ctx, org, username)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func resourceOrganizationBlockCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceOrganizationBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 
 	username := d.Id()
 
@@ -65,8 +65,8 @@ func resourceOrganizationBlockRead(d *schema.ResourceData, meta interface{}) err
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	log.Printf("[DEBUG] Reading organization block: %s (%s)", d.Id(), ownerName)
-	blocked, resp, err := client.Organizations.IsBlocked(ctx, ownerName, username)
+	log.Printf("[DEBUG] Reading organization block: %s (%s)", d.Id(), org)
+	blocked, resp, err := client.Organizations.IsBlocked(ctx, org, username)
 	if err != nil {
 		if ghErr, ok := err.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
@@ -75,7 +75,7 @@ func resourceOrganizationBlockRead(d *schema.ResourceData, meta interface{}) err
 			// not sure if this will ever be hit, I imagine just returns false?
 			if ghErr.Response.StatusCode == http.StatusNotFound {
 				log.Printf("[WARN] Removing organization block %s/%s from state because it no longer exists in GitHub",
-					ownerName, d.Id())
+					org, d.Id())
 				d.SetId("")
 				return nil
 			}
@@ -97,11 +97,11 @@ func resourceOrganizationBlockRead(d *schema.ResourceData, meta interface{}) err
 func resourceOrganizationBlockDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Owner).v3client
 
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	username := d.Id()
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
-	log.Printf("[DEBUG] Deleting organization block: %s (%s)", d.Id(), ownerName)
-	_, err := client.Organizations.UnblockUser(ctx, ownerName, username)
+	log.Printf("[DEBUG] Deleting organization block: %s (%s)", d.Id(), org)
+	_, err := client.Organizations.UnblockUser(ctx, org, username)
 	return err
 }

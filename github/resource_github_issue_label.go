@@ -148,7 +148,7 @@ func resourceGithubIssueLabelCreateOrUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceGithubIssueLabelRead(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func resourceGithubIssueLabelRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceGithubIssueLabelDelete(d *schema.ResourceData, meta interface{}) error {
-	err := checkOrganization(meta)
+	err := checkOwner(meta)
 	if err != nil {
 		return err
 	}

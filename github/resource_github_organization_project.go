@@ -49,14 +49,14 @@ func resourceGithubOrganizationProjectCreate(d *schema.ResourceData, meta interf
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
 	ctx := context.Background()
 
-	log.Printf("[DEBUG] Creating organization project: %s (%s)", name, ownerName)
+	log.Printf("[DEBUG] Creating organization project: %s (%s)", name, org)
 	project, _, err := client.Organizations.CreateProject(ctx,
-		ownerName,
+		org,
 		&github.ProjectOptions{
 			Name: &name,
 			Body: &body,
@@ -77,7 +77,7 @@ func resourceGithubOrganizationProjectRead(d *schema.ResourceData, meta interfac
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 
 	projectID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -88,7 +88,7 @@ func resourceGithubOrganizationProjectRead(d *schema.ResourceData, meta interfac
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	log.Printf("[DEBUG] Reading organization project: %s (%s)", d.Id(), ownerName)
+	log.Printf("[DEBUG] Reading organization project: %s (%s)", d.Id(), org)
 	project, resp, err := client.Projects.GetProject(ctx, projectID)
 	if err != nil {
 		if ghErr, ok := err.(*github.ErrorResponse); ok {
@@ -97,7 +97,7 @@ func resourceGithubOrganizationProjectRead(d *schema.ResourceData, meta interfac
 			}
 			if ghErr.Response.StatusCode == http.StatusNotFound {
 				log.Printf("[WARN] Removing organization project %s/%s from state because it no longer exists in GitHub",
-					ownerName, d.Id())
+					org, d.Id())
 				d.SetId("")
 				return nil
 			}
@@ -109,7 +109,7 @@ func resourceGithubOrganizationProjectRead(d *schema.ResourceData, meta interfac
 	d.Set("name", project.GetName())
 	d.Set("body", project.GetBody())
 	d.Set("url", fmt.Sprintf("https://github.com/orgs/%s/projects/%d",
-		ownerName, project.GetNumber()))
+		org, project.GetNumber()))
 
 	return nil
 }
@@ -121,7 +121,7 @@ func resourceGithubOrganizationProjectUpdate(d *schema.ResourceData, meta interf
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
@@ -137,7 +137,7 @@ func resourceGithubOrganizationProjectUpdate(d *schema.ResourceData, meta interf
 	}
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
-	log.Printf("[DEBUG] Updating organization project: %s (%s)", d.Id(), ownerName)
+	log.Printf("[DEBUG] Updating organization project: %s (%s)", d.Id(), org)
 	if _, _, err := client.Projects.UpdateProject(ctx, projectID, &options); err != nil {
 		return err
 	}
@@ -152,14 +152,14 @@ func resourceGithubOrganizationProjectDelete(d *schema.ResourceData, meta interf
 	}
 
 	client := meta.(*Owner).v3client
-	ownerName := meta.(*Owner).name
+	org := meta.(*Owner).name
 	projectID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return err
 	}
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
-	log.Printf("[DEBUG] Deleting organization project: %s (%s)", d.Id(), ownerName)
+	log.Printf("[DEBUG] Deleting organization project: %s (%s)", d.Id(), org)
 	_, err = client.Projects.DeleteProject(ctx, projectID)
 	return err
 }
