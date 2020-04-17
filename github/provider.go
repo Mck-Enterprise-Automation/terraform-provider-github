@@ -24,7 +24,7 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GITHUB_ORGANIZATION", nil),
-				Deprecated:  "Use owner instead",
+				Deprecated:  "Use owner field (or GITHUB_OWNER ENV variable)",
 				Description: descriptions["organization"],
 			},
 			"base_url": {
@@ -101,7 +101,10 @@ func init() {
 
 func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 	return func(d *schema.ResourceData) (interface{}, error) {
-		owner := d.Get("owner").(string)
+		owner := d.Get("organization").(string)
+		if owner == "" {
+			owner = d.Get("owner").(string)
+		}
 
 		config := Config{
 			Token:    d.Get("token").(string),

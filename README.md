@@ -85,9 +85,10 @@ testing. It will need to have the following scopes selected:
 
 Once the token has been created, it must be exported in your environment as `GITHUB_TOKEN`.
 
-### GitHub organization
-If you do not have an organization already that you are comfortable running tests against, you will need to [create one](https://help.github.com/en/articles/creating-a-new-organization-from-scratch). The free "Team for Open Source" org type is fine for these tests. The name of the
-organization must then be exported in your environment as `GITHUB_ORGANIZATION`.
+### GitHub owner
+To run tests involving resources managed by an organization (not an individual GitHub user account), you will need to [create one](https://help.github.com/en/articles/creating-a-new-organization-from-scratch). The free "Team for Open Source" org type is fine for these tests. The name of the
+organization must then be exported in your environment as `GITHUB_OWNER`. If you plan to only run tests affecting resources managed by user accounts, 
+set the `GITHUB_OWNER` variable to the `GITHUB_TEST_USER` you export as described below. 
 
 ### Test repositories
 In the organization you are using above, create the following test repositories:

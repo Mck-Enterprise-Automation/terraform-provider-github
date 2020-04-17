@@ -40,7 +40,7 @@ The following arguments are supported in the `provider` block:
   corresponding to the token will need "owner" privileges for this organization. It must be provided, but
   it can also be sourced from the `GITHUB_OWNER` environment variable.
 
-* `organization` - (DEPRICATED) This is the target GitHub organization or a user to manage. The account
+* `organization` - (Deprecated) This is the target GitHub organization or a user to manage. The account
   corresponding to the token will need "organization" privileges for this organization. It must be provided, but
   it can also be sourced from the `GITHUB_ORGANIZATION` environment variable.
 
