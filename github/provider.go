@@ -49,6 +49,7 @@ func Provider() terraform.ResourceProvider {
 			"github_actions_secret":           resourceGithubActionsSecret(),
 			"github_branch_protection":        resourceGithubBranchProtection(),
 			"github_issue_label":              resourceGithubIssueLabel(),
+			"github_member_privileges":        resourceGithubMemberPrivileges(),
 			"github_membership":               resourceGithubMembership(),
 			"github_organization_block":       resourceOrganizationBlock(),
 			"github_organization_project":     resourceGithubOrganizationProject(),
@@ -71,6 +72,7 @@ func Provider() terraform.ResourceProvider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"github_collaborators":      dataSourceGithubCollaborators(),
 			"github_ip_ranges":          dataSourceGithubIpRanges(),
+			"github_member_privileges":  dataSourceGithubMemberPrivileges(),
 			"github_membership":         dataSourceGithubMembership(),
 			"github_release":            dataSourceGithubRelease(),
 			"github_repositories":       dataSourceGithubRepositories(),
