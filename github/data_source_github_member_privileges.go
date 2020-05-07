@@ -36,7 +36,7 @@ func dataSourceGithubMemberPrivilegesRead(d *schema.ResourceData, meta interface
 
 	ctx := context.Background()
 
-	org, resp, err := client.Organizations.Get(ctx, orgName)
+	org, _, err := client.Organizations.Get(ctx, orgName)
 
 	if err != nil {
 		return err
