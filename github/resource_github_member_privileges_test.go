@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -12,13 +11,9 @@ import (
 )
 
 func TestAccGithubMemberPrivileges_basic(t *testing.T) {
-	if testCollaborator == "" {
-		t.Skip("Skipping because `GITHUB_TEST_COLLABORATOR` is not set")
-	}
+	var organization github.Organization
 
-	var org github.Organization
-
-	rn := "github_member_privileges.test_org_member_privileges"
+	rn := "github_member_privileges.test_member_privileges"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -26,10 +21,14 @@ func TestAccGithubMemberPrivileges_basic(t *testing.T) {
 		CheckDestroy: testAccCheckGithubMemberPrivilegesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccGithubMemberPrivilegesConfig(testCollaborator),
+				Config: testAccGithubMemberPrivilegesConfig("false", "false", "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckGithubMemberPrivilegesExists(rn, &org),
-					testAccCheckGithubMemberPrivilegesRoleState(rn, &org),
+					testAccCheckGithubMemberPrivilegesExists(rn, &organization),
+					testAccCheckGithubMemberPrivilegesAttributes(&organization, &testAccGithubMemberPrivilegesExpectedAttributes{
+						MembersCanCreatePublicRepos:   false,
+						MembersCanCreatePrivateRepos:  false,
+						MembersCanCreateInternalRepos: false,
+					}),
 				),
 			},
 			{
@@ -41,122 +40,82 @@ func TestAccGithubMemberPrivileges_basic(t *testing.T) {
 	})
 }
 
-func TestAccGithubMemberPrivileges_caseInsensitive(t *testing.T) {
-	if testCollaborator == "" {
-		t.Skip("Skipping because `GITHUB_TEST_COLLABORATOR` is not set")
-	}
-
-	var membership github.Membership
-	var otherMembership github.Membership
-
-	rn := "github_membership.test_org_membership"
-	otherCase := flipUsernameCase(testCollaborator)
-
-	if testCollaborator == otherCase {
-		t.Skip("Skipping because `GITHUB_TEST_COLLABORATOR` has no letters to flip case")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckGithubMembershipDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccGithubMemberPrivilegesConfig(testCollaborator),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckGithubMemberPrivilegesExists(rn, &membership),
-				),
-			},
-			{
-				Config: testAccGithubMemberPrivilegesConfig(otherCase),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckGithubMemberPrivilegesExists(rn, &otherMembership),
-					testAccGithubMemberPrivilegesTheSame(&membership, &otherMembership),
-				),
-			},
-			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
+type testAccGithubMemberPrivilegesExpectedAttributes struct {
+	MembersCanCreatePublicRepos   bool
+	MembersCanCreatePrivateRepos  bool
+	MembersCanCreateInternalRepos bool
 }
 
-func testAccCheckGithubMemberPrivilegesExists(n string, membership *github.Membership) resource.TestCheckFunc {
+func testAccCheckGithubMemberPrivilegesExists(n string, org *github.Organization) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not Found: %s", n)
 		}
 
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No membership ID is set")
+		memberPrivilegesName := rs.Primary.ID
+		if memberPrivilegesName == "" {
+			return fmt.Errorf("No Member Privileges is set")
 		}
 
-		conn := testAccProvider.Meta().(*Organization).v3client
-		orgName, username, err := parseTwoPartID(rs.Primary.ID, "organization", "username")
+		defaultOrg := testAccProvider.Meta().(*Organization)
+		conn := defaultOrg.v3client
+		gotOrg, _, err := conn.Organizations.Get(context.TODO(), defaultOrg.name)
 		if err != nil {
 			return err
 		}
-
-		githubMembership, _, err := conn.Organizations.GetOrgMembership(context.TODO(), username, orgName)
-		if err != nil {
-			return err
-		}
-		*membership = *githubMembership
+		*org = *gotOrg
 		return nil
 	}
 }
 
-func testAccCheckGithubMemberPrivilegesRoleState(n string, membership *github.Membership) resource.TestCheckFunc {
+func testAccCheckGithubMemberPrivilegesAttributes(org *github.Organization, want *testAccGithubMemberPrivilegesExpectedAttributes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not Found: %s", n)
+		if members_can_create_public_repositories := org.GetMembersCanCreatePublicRepos(); members_can_create_public_repositories != want.MembersCanCreatePublicRepos {
+			return fmt.Errorf("got members_can_create_public_repositories for org %#v; want %#v", members_can_create_public_repositories, want.MembersCanCreatePublicRepos)
 		}
 
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No membership ID is set")
+		if members_can_create_private_repositories := org.GetMembersCanCreatePrivateRepos(); members_can_create_private_repositories != want.MembersCanCreatePrivateRepos {
+			return fmt.Errorf("got members_can_create_private_repositories for org %#v; want %#v", members_can_create_private_repositories, want.MembersCanCreatePrivateRepos)
 		}
 
-		conn := testAccProvider.Meta().(*Organization).v3client
-		orgName, username, err := parseTwoPartID(rs.Primary.ID, "organization", "username")
-		if err != nil {
-			return err
+		if members_can_create_internal_repositories := org.GetMembersCanCreateInternalRepos(); members_can_create_internal_repositories != want.MembersCanCreateInternalRepos {
+			return fmt.Errorf("got members_can_create_internal_repositories for org %#v; want %#v", members_can_create_internal_repositories, want.MembersCanCreateInternalRepos)
 		}
 
-		githubMembership, _, err := conn.Organizations.GetOrgMembership(context.TODO(), username, orgName)
-		if err != nil {
-			return err
-		}
-
-		resourceRole := membership.GetRole()
-		actualRole := githubMembership.GetRole()
-
-		if resourceRole != actualRole {
-			return fmt.Errorf("Membership role %v in resource does match actual state of %v",
-				resourceRole, actualRole)
-		}
 		return nil
 	}
 }
 
-func testAccGithubMemberPrivilegesConfig(username string) string {
+func testAccCheckGithubMemberPrivilegesDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Organization).v3client
+	orgName := testAccProvider.Meta().(*Organization).name
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "github_member_privileges" {
+			continue
+		}
+
+		gotOrg, resp, err := conn.Organizations.Get(context.TODO(), orgName)
+		if err == nil {
+			if name := gotOrg.GetName(); gotOrg != nil && name == rs.Primary.ID {
+				return fmt.Errorf("Member Privileges on organization %s still exists", name)
+			}
+		}
+		if resp.StatusCode != 404 {
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func testAccGithubMemberPrivilegesConfig(members_can_create_public_repositories string, members_can_create_private_repositories string, members_can_create_internal_repositories string) string {
 	return fmt.Sprintf(`
-  resource "github_membership" "test_org_membership" {
-    username = "%s"
-    role = "member"
-  }
-`, username)
+resource "github_member_privileges" "test_member_privileges" {
+	members_can_create_public_repositories = "%s"
+	members_can_create_private_repositories = "%s"
+	members_can_create_internal_repositories = "%s"
 }
-
-func testAccGithubMemberPrivilegesTheSame(orig, other *github.Membership) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if orig.GetURL() != other.GetURL() {
-			return errors.New("users are different")
-		}
-
-		return nil
-	}
+`, members_can_create_public_repositories, members_can_create_private_repositories, members_can_create_internal_repositories)
 }
