@@ -41,14 +41,14 @@ jobs:
         uses: terraformtesting/acceptance-tests@v1.2.0
         with:
           RUN_FILTER: ${{ env.RUN_FILTER }}
-          GITHUB_ORGANIZATION: terraformtesting
+          GITHUB_ORGANIZATION: Mck-Script-Test
+          GITHUB_TEST_USER: sargam-badyal
           GITHUB_BASE_URL: https://api.github.com/
-          GITHUB_TEST_USER: github-terraform-test-user
-          GITHUB_TEST_USER_NAME: "Test User"
-          GITHUB_TEST_USER_EMAIL: 60107403+github-terraform-test-user@users.noreply.github.com
-          GITHUB_TEST_USER_TOKEN: ${{ secrets.GITHUB_TEST_USER_TOKEN }}
+          GITHUB_TEST_USER_NAME: "Sargam"
+          GITHUB_TEST_USER_EMAIL: 62246551+sargam-badyal@users.noreply.github.com
+          GITHUB_TEST_USER_TOKEN: ${{ secrets.TEST_USER_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TEST_USER_TOKEN }}
-          GITHUB_TEST_COLLABORATOR: github-terraform-test-collaborator
-          GITHUB_TEST_COLLABORATOR_TOKEN: ${{ secrets.GITHUB_TEST_COLLABORATOR_TOKEN }}
-          GITHUB_TEMPLATE_REPOSITORY: terraform-template-module
-          GITHUB_TEMPLATE_REPOSITORY_RELEASE_ID: 23826477
+          GITHUB_TEST_COLLABORATOR: samm-git
+          GITHUB_TEST_COLLABORATOR_TOKEN: ${{ secrets.TEST_COLLABORATOR_TOKEN }}
+          GITHUB_TEMPLATE_REPOSITORY: test-repo-template
+          GITHUB_TEMPLATE_REPOSITORY_RELEASE_ID: 25958714
