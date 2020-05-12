@@ -46,6 +46,7 @@ jobs:
           GITHUB_TEST_USER_NAME: "Sargam"
           GITHUB_TEST_USER_EMAIL: 62246551+sargam-badyal@users.noreply.github.com
           GITHUB_TEST_USER_TOKEN: ${{ secrets.TEST_USER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TEST_USER_TOKEN }}
           GITHUB_TEST_COLLABORATOR: samm-git
           GITHUB_TEST_COLLABORATOR_TOKEN: ${{ secrets.TEST_COLLABORATOR_TOKEN }}
           GITHUB_TEMPLATE_REPOSITORY: test-repo-template
