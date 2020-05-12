@@ -27,7 +27,7 @@ func testMemberPrivilegesCheck() resource.TestCheckFunc {
 	return resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("data.github_member_privileges.test", "members_can_create_internal_repositories", "true"),
 		resource.TestCheckResourceAttr("data.github_member_privileges.test", "members_can_create_private_repositories", "true"),
-		resource.TestCheckResourceAttr("data.github_member_privileges.test", "members_can_create_public_repositories", "true"),
+		resource.TestCheckResourceAttr("data.github_member_privileges.test", "members_can_create_public_repositories", "false"),
 	)
 }
 

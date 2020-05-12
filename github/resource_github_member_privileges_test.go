@@ -21,13 +21,13 @@ func TestAccGithubMemberPrivileges_basic(t *testing.T) {
 		CheckDestroy: testAccCheckGithubMemberPrivilegesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccGithubMemberPrivilegesConfig("false", "false", "false"),
+				Config: testAccGithubMemberPrivilegesConfig("false", "true", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckGithubMemberPrivilegesExists(rn, &organization),
 					testAccCheckGithubMemberPrivilegesAttributes(&organization, &testAccGithubMemberPrivilegesExpectedAttributes{
 						MembersCanCreatePublicRepos:   false,
-						MembersCanCreatePrivateRepos:  false,
-						MembersCanCreateInternalRepos: false,
+						MembersCanCreatePrivateRepos:  true,
+						MembersCanCreateInternalRepos: true,
 					}),
 				),
 			},
